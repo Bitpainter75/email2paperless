@@ -1,0 +1,34 @@
+services:
+  mail-pdf-bridge:
+    build: .
+    container_name: mail-pdf-bridge
+    restart: unless-stopped
+    environment:
+      # ── IMAP (optional — weglassen oder leer lassen um IMAP zu deaktivieren) ──
+      IMAP_SERVER: imap.domain.com
+      IMAP_PORT: 993
+      IMAP_USERNAME: mail@domain.com
+      IMAP_PASSWORD:
+      IMAP_FOLDER: Consume          # IMAP-Ordner der überwacht wird
+      IMAP_FETCH_ALL: "false"       # true = alle Mails holen (nicht nur ungelesene)
+      IMAP_USE_SSL: "true"
+
+      # ── Verhalten ─────────────────────────────────────────
+      SAVE_EMAIL_PDF: "true"        # E-Mail-Body als PDF speichern
+      SAVE_ATTACHMENTS: "true"      # Anhänge separat speichern
+      ATTACHMENT_TYPES: ".pdf,.png,.jpg,.jpeg,.tiff,.txt,.doc,.csv,.xls,.json,.xml,.docx,.xlsx"  # erlaubte Endungen
+      MARK_SEEN: "true"             # als gelesen markieren nach Verarbeitung
+      MOVE_TO_FOLDER: "Finished"    # optional: in diesen Ordner verschieben (hat Vorrang vor DELETE_AFTER)
+      DELETE_AFTER: "true"          # true = nach Verarbeitung löschen (IMAP + EML-Dateien)
+                                    # EML ohne DELETE_AFTER → wird nach processed/ verschoben
+      BLOCK_EXTERNAL_URLS: "false"  # true = externe Bilder/Tracking-Pixel blockieren
+
+      # ── Timing ────────────────────────────────────────────
+      INTERVAL_SECONDS: 300         # alle 5 Minuten prüfen
+
+      # ── Debug ─────────────────────────────────────────────
+      DRY_RUN: "false"              # true = nur loggen, nichts speichern
+
+    volumes:
+      - /volume1/docker/mail-pdf-bridge/consume:/consume   # Paperless consume-Ordner
+      - /volume1/docker/mail-pdf-bridge/eml:/eml           # .eml Dateien hier reinkopieren
